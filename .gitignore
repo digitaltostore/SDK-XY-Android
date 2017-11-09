@@ -1,0 +1,56 @@
+out
+.idea/
+*.iml
+.DS_Store
+*/.classpath
+*/.project
+*/bin/
+*/gen/
+ajcore.*
+
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+captures/
+gen/
+out/
+build/
+*/build/
+pkg/
+tmp/
+intermediates
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Eclipse project files
+.classpath
+.project
+
+# Windows thumbnail db
+.DS_Store
+
+# IDEA/Android Studio project files, because
+# the project can be imported from settings.gradle
+.idea
+*.iml
+
+# Local IDEA workspace
+.idea/workspace.xml
+
+# Gradle cache
+.gradle/
+
+*/scripts/tiles/
+*/scripts/protos
+
+gradle.properties%
