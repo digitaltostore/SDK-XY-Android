@@ -22,7 +22,7 @@ repositories {
 * In your gradle file dependencies section add : 
 ```
 dependencies {
-    compile 'com.dts:dtsxy:+'
+    compile 'com.dts:dtsxy:6.1748.0'
 }
 ```
 
