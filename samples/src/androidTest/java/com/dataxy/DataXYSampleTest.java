@@ -1,8 +1,10 @@
 package com.dataxy;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
@@ -11,20 +13,17 @@ import android.support.test.espresso.ViewAction;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiSelector;
+import android.support.v4.app.ActivityCompat;
 import android.view.View;
 
 import com.dataxy.sample.DataXYSampleActivity;
-import okhttp3.OkHttpClient;
-import okhttp3.mockwebserver.Dispatcher;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.MethodSorters;
 
 import java.io.ByteArrayOutputStream;
@@ -32,6 +31,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.registerIdlingResources;
@@ -42,7 +47,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static java.lang.Thread.sleep;
 import static org.hamcrest.Matchers.any;
 
-@RunWith(TestRunner.class)
+@RunWith(BlockJUnit4ClassRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DataXYSampleTest extends Junit4InstrumentationTestCase<DataXYSampleActivity> {
 
@@ -64,7 +69,7 @@ public class DataXYSampleTest extends Junit4InstrumentationTestCase<DataXYSample
         getActivity();
         Context context = getInstrumentation().getTargetContext();
 
-        if (!PermissionHelper.checkForFineLocationPermission(context)) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             onView(withText("Ask for permission")).perform(click());
 
             UiDevice uiDevice = UiDevice.getInstance(getInstrumentation());

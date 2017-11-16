@@ -1,7 +1,8 @@
 package com.dataxy.sample;
 
-import android.app.Activity;
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -9,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
@@ -16,11 +18,12 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.dataxy.DataXY;
-import com.dataxy.PermissionHelper;
 
 public class DataXYSampleActivity extends FragmentActivity {
 
     private static final String TAG = DataXYSampleActivity.class.toString();
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
 
     private Button mAskerForPermissionButton;
     private Button mToggleGPSButton;
@@ -30,7 +33,7 @@ public class DataXYSampleActivity extends FragmentActivity {
 
     LocationListener mLocationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
-            Log.d(TAG,location.getLatitude() + ";" + location.getLongitude());
+            Log.d(TAG, location.getLatitude() + ";" + location.getLongitude());
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -60,8 +63,22 @@ public class DataXYSampleActivity extends FragmentActivity {
 
     @Override
     protected void onResume() {
-        mAskerForPermissionButton.setOnClickListener(new PermissionClickListener(this));
-        mToggleGPSButton.setOnClickListener(new GPSClickListener(this));
+        mAskerForPermissionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (askForFineLocationPermission()) {
+                    Toast.makeText(v.getContext(), "Fine Location Permission is already granted", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        mToggleGPSButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final boolean isLocationEnabled = toggleGPS();
+                mToggleGPSButton.setText(isLocationEnabled ? "Disable GPS" : "Enable GPS");
+                Toast.makeText(v.getContext(), "GPS is now " + (isLocationEnabled ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
+            }
+        });
 
         super.onResume();
     }
@@ -87,9 +104,9 @@ public class DataXYSampleActivity extends FragmentActivity {
     }
 
     private void enableGPS() {
-        if (PermissionHelper.checkForCoarseLocationPermission(this)
-                || PermissionHelper.checkForFineLocationPermission(this)) {
+        if (checkFineLocationPermissionGranted()) {
             for (String provider : mLocationManager.getAllProviders()) {
+                //noinspection MissingPermission since check is done in #checkFineLocationPermissionGranted
                 mLocationManager.requestLocationUpdates(provider, 0, 0, mLocationListener);
             }
             mLocationEnabled = true;
@@ -99,8 +116,7 @@ public class DataXYSampleActivity extends FragmentActivity {
     }
 
     private void disableGPS() {
-        if (PermissionHelper.checkForCoarseLocationPermission(this)
-                || PermissionHelper.checkForFineLocationPermission(this)) {
+        if (checkFineLocationPermissionGranted()) {
             this.mLocationManager.removeUpdates(mLocationListener);
         }
         mLocationEnabled = false;
@@ -115,47 +131,34 @@ public class DataXYSampleActivity extends FragmentActivity {
         }
     }
 
-
-    private static class PermissionClickListener implements View.OnClickListener {
-        private Activity mActivity;
-
-        PermissionClickListener(Activity activity) {
-            mActivity = activity;
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (requestPermission(mActivity)) { // or use PermissionHelper.askForFineLocationPermission(DataXYSampleActivity.this)
-                Toast.makeText(mActivity, "Fine Location Permission is already granted", Toast.LENGTH_SHORT).show();
-            }
-        }
+    /**
+     * @return true if fine location permission is granted, false otherwise
+     */
+    private boolean checkFineLocationPermissionGranted() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
-     * <p>Helper method to request the Fine Location Permission from Activity. Uses {@link PermissionHelper#LOCATION_REQUEST_CODE} as request code.</p>
+     * <p>Manage permission request for fine location permission</p>
      *
-     * @param activity Activity
+     * @return true if permission is already granted, false otherwise
      */
-    public static boolean requestPermission(Activity activity) {
-        //noinspection SimplifiableIfStatement
+    private boolean askForFineLocationPermission() {
+        String permissionName = Manifest.permission.ACCESS_FINE_LOCATION;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return PermissionHelper.askForFineLocationPermission(activity);
+            if (checkFineLocationPermissionGranted()) {
+                return true;
+            }
+
+            ActivityCompat.requestPermissions(this, new String[]{permissionName}, LOCATION_PERMISSION_REQUEST_CODE);
+            return false;
         }
+
+        final boolean isPermissionInManifest = getPackageManager().checkPermission(permissionName, getPackageName()) == PackageManager.PERMISSION_GRANTED;
+        if (!isPermissionInManifest) {
+            Log.e(TAG, "You have not granted '" + permissionName + "' permission in your manifest");
+        }
+
         return true;
-    }
-
-    private static class GPSClickListener implements View.OnClickListener {
-        private DataXYSampleActivity mActivity;
-
-        private GPSClickListener(DataXYSampleActivity activity) {
-            mActivity = activity;
-        }
-
-        @Override
-        public void onClick(View v) {
-            final boolean isLocationEnabled = mActivity.toggleGPS();
-            mActivity.mToggleGPSButton.setText(isLocationEnabled ? "Disable GPS" : "Enable GPS");
-            Toast.makeText(mActivity, "GPS is now " + (isLocationEnabled ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
-        }
     }
 }
