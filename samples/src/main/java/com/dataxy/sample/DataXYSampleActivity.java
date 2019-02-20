@@ -55,8 +55,10 @@ public class DataXYSampleActivity extends FragmentActivity {
             Toast.makeText(DataXYSampleActivity.this, "DataXY is registered", Toast.LENGTH_SHORT).show();
         }
 
-        mAskerForPermissionButton = (Button) findViewById(R.id.main_ask_for_permission);
-        mToggleGPSButton = (Button) findViewById(R.id.main_enable_gps);
+        DataXY.enable(this, true);
+
+        mAskerForPermissionButton = findViewById(R.id.main_ask_for_permission);
+        mToggleGPSButton = findViewById(R.id.main_enable_gps);
 
         mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
     }
