@@ -21,6 +21,8 @@ allprojects {
         mavenLocal()
         maven { url "https://maven.google.com" }
         jcenter()
+
+        maven { url "https://packagecloud.io/DigitalToStore/SDK-Android-XY/maven2" }
     }
 }
 
